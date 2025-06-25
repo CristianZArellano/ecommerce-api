@@ -347,3 +347,41 @@ pyrightconfig.json
 .cursorignore
 .cursorindexingignore
 >>>>>>> 649f0f19b3f44a54ea1dd33d469c36c82400f502
+
+# Environment variables
+.env
+.env.local
+.env.production
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Logs
+*.log
+django.log
+
+# Backup files
+backup_data.json
+
+# Cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Media files (in production, use cloud storage)
+/media/
+
+# Static files
+/staticfiles/
+/static/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db

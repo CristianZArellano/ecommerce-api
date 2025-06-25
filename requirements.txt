@@ -9,3 +9,9 @@ Markdown==3.8.2
 redis==6.2.0
 sqlparse==0.5.3
 tzdata==2025.2
+psycopg2-binary==2.9.7
+python-decouple==3.8
+django-redis==5.4.0
+psycopg2-binary==2.9.7
+python-decouple==3.8
+django-redis==5.4.0
