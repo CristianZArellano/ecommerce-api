@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Created by https://www.toptal.com/developers/gitignore/api/django,python,redis,visualstudiocode
 # Edit at https://www.toptal.com/developers/gitignore?templates=django,python,redis,visualstudiocode
 
@@ -17,6 +18,10 @@ media
 
 ### Django.Python Stack ###
 # Byte-compiled / optimized / DLL files
+=======
+# Byte-compiled / optimized / DLL files
+__pycache__/
+>>>>>>> 649f0f19b3f44a54ea1dd33d469c36c82400f502
 *.py[cod]
 *$py.class
 
@@ -70,8 +75,18 @@ cover/
 
 # Translations
 *.mo
+<<<<<<< HEAD
 
 # Django stuff:
+=======
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+>>>>>>> 649f0f19b3f44a54ea1dd33d469c36c82400f502
 
 # Flask stuff:
 instance/
@@ -106,6 +121,15 @@ ipython_config.py
 #   install all needed dependencies.
 #Pipfile.lock
 
+<<<<<<< HEAD
+=======
+# UV
+#   Similar to Pipfile.lock, it is generally recommended to include uv.lock in version control.
+#   This is especially recommended for binary packages to ensure reproducibility, and is more
+#   commonly ignored for libraries.
+#uv.lock
+
+>>>>>>> 649f0f19b3f44a54ea1dd33d469c36c82400f502
 # poetry
 #   Similar to Pipfile.lock, it is generally recommended to include poetry.lock in version control.
 #   This is especially recommended for binary packages to ensure reproducibility, and is more
@@ -118,8 +142,15 @@ ipython_config.py
 #pdm.lock
 #   pdm stores project-wide configurations in .pdm.toml, but it is recommended to not include it
 #   in version control.
+<<<<<<< HEAD
 #   https://pdm.fming.dev/#use-with-ide
 .pdm.toml
+=======
+#   https://pdm.fming.dev/latest/usage/project/#working-with-version-control
+.pdm.toml
+.pdm-python
+.pdm-build/
+>>>>>>> 649f0f19b3f44a54ea1dd33d469c36c82400f502
 
 # PEP 582; used by e.g. github.com/David-OConnor/pyflow and github.com/pdm-project/pdm
 __pypackages__/
@@ -171,6 +202,7 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
+<<<<<<< HEAD
 ### Python ###
 # Byte-compiled / optimized / DLL files
 
@@ -288,3 +320,30 @@ pyrightconfig.json
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/django,python,redis,visualstudiocode
+=======
+# Abstra
+# Abstra is an AI-powered process automation framework.
+# Ignore directories containing user credentials, local state, and settings.
+# Learn more at https://abstra.io/docs
+.abstra/
+
+# Visual Studio Code
+#  Visual Studio Code specific template is maintained in a separate VisualStudioCode.gitignore 
+#  that can be found at https://github.com/github/gitignore/blob/main/Global/VisualStudioCode.gitignore
+#  and can be added to the global gitignore or merged into this file. However, if you prefer, 
+#  you could uncomment the following to ignore the enitre vscode folder
+# .vscode/
+
+# Ruff stuff:
+.ruff_cache/
+
+# PyPI configuration file
+.pypirc
+
+# Cursor
+#  Cursor is an AI-powered code editor. `.cursorignore` specifies files/directories to
+#  exclude from AI features like autocomplete and code analysis. Recommended for sensitive data
+#  refer to https://docs.cursor.com/context/ignore-files
+.cursorignore
+.cursorindexingignore
+>>>>>>> 649f0f19b3f44a54ea1dd33d469c36c82400f502
