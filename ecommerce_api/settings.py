@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
     'rest_framework',
-    'store', # Asumiendo que esta es tu aplicación donde están los modelos y vistas
+    'store',  # Assuming this is your application where models and views are located
     'django_celery_results',
     'django_celery_beat',
 ]
@@ -75,9 +75,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'ecommerce_api.wsgi.application'
 
-# ================================
-# DATABASE CONFIGURATION - POSTGRESQL
-# ================================
+# Database Configuration - PostgreSQL
 
 DATABASES = {
     'default': {
@@ -87,9 +85,6 @@ DATABASES = {
         'PASSWORD': config('DB_PASSWORD', default='postgres'),
         'HOST': config('DB_HOST', default='localhost'),
         'PORT': config('DB_PORT', default='5432'),
-        'OPTIONS': {
-            # PostgreSQL no usa 'charset', usa encoding por defecto UTF-8
-        },
         'TEST': {
             'NAME': 'test_mydb',
         }
@@ -117,8 +112,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/
 
-LANGUAGE_CODE = 'es-co'  # Cambiado a español colombiano
-TIME_ZONE = 'America/Bogota'  # Zona horaria de Colombia
+LANGUAGE_CODE = 'es-co'  # Changed to Colombian Spanish
+TIME_ZONE = 'America/Bogota'  # Colombian timezone
 USE_I18N = True
 USE_TZ = True
 
@@ -137,9 +132,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-# ================================
-# CACHE CONFIGURATION - REDIS
-# ================================
+# Cache Configuration - Redis
 
 CACHES = {
     "default": {
@@ -149,17 +142,15 @@ CACHES = {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         },
         "KEY_PREFIX": "ecommerce",
-        "TIMEOUT": 300,  # 5 minutos
+        "TIMEOUT": 300,  # 5 minutes
         "VERSION": 1,
     }
 }
 
-# Tiempo de vida por defecto para la caché
-CACHE_TTL = 60 * 5  # 5 minutos (en segundos)
+# Default cache time-to-live
+CACHE_TTL = 60 * 5  # 5 minutes (in seconds)
 
-# ================================
-# DJANGO REST FRAMEWORK SETTINGS
-# ================================
+# Django REST Framework Settings
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -182,9 +173,7 @@ REST_FRAMEWORK = {
     ]
 }
 
-# ================================
-# LOGGING CONFIGURATION
-# ================================
+# Logging Configuration
 
 LOGGING = {
     'version': 1,
@@ -225,18 +214,17 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
-        'store': {  # Tu logger existente
+        'store': {
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
         },
     },
 }
-# ================================
-# SECURITY SETTINGS
-# ================================
 
-# CORS settings (para cuando añadas frontend)
+# Security Settings
+
+# CORS settings (for when you add frontend)
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -249,62 +237,88 @@ SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 X_FRAME_OPTIONS = 'DENY'
 
-# En producción, descomenta estas líneas:
+# In production, uncomment these lines:
 if not DEBUG:
     SECURE_SSL_REDIRECT = True
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    
-    
-CELERY_BROKER_URL = 'redis://localhost:6379/2'
 
-# Backend: PostgreSQL (tu BD existente)
-CELERY_RESULT_BACKEND = 'redis://localhost:6379/3'
+# Broker configuration (RabbitMQ in Docker)
+CELERY_BROKER_URL = config(
+    'CELERY_BROKER_URL',
+    default='amqp://guest:guest@localhost:5672//'
+)
+
+# Results backend (PostgreSQL)
+CELERY_RESULT_BACKEND = 'django-db'
 CELERY_CACHE_BACKEND = 'django-cache'
 
-# Configuraciones de serialización
+# Serialization settings
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
-CELERY_TIMEZONE = 'UTC'
+CELERY_TIMEZONE = 'America/Bogota'
 
-# Configuración de tareas
+# Task execution settings
 CELERY_TASK_TRACK_STARTED = True
-CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutos
-CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutos
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60
 CELERY_WORKER_PREFETCH_MULTIPLIER = 1
 CELERY_TASK_ACKS_LATE = True
+CELERY_TASK_REJECT_ON_WORKER_LOST = True
 
-# Configuración de conexión RabbitMQ
+# Connection settings
 CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
 CELERY_BROKER_CONNECTION_RETRY = True
 CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
 
+# Task routing (queues)
+CELERY_TASK_ROUTES = {
+    'store.tasks.send_order_confirmation_email': {'queue': 'emails'},
+    'store.tasks.generate_sales_report_async': {'queue': 'reports'},
+    'store.tasks.process_order_async': {'queue': 'orders'},
+    'store.tasks.check_low_stock': {'queue': 'monitoring'},
+    'store.tasks.*': {'queue': 'default'},
+}
+
+# Rate limiting
+CELERY_TASK_ANNOTATIONS = {
+    'store.tasks.send_order_confirmation_email': {'rate_limit': '10/m'},
+    'store.tasks.send_low_stock_alert': {'rate_limit': '5/m'},
+}
+
+# Scheduled tasks (Celery Beat)
 CELERY_BEAT_SCHEDULE = {
     'generate-daily-reports': {
         'task': 'store.tasks.generate_daily_sales_report',
-        'schedule': crontab(hour=23, minute=30),  # 11:30 PM diario
+        'schedule': crontab(hour=23, minute=30),  # 11:30 PM daily
     },
     'cleanup-expired-orders': {
         'task': 'store.tasks.cleanup_expired_orders',
-        'schedule': crontab(hour=2, minute=0),  # 2:00 AM diario
+        'schedule': crontab(hour=2, minute=0),  # 2:00 AM daily
     },
     'check-low-stock': {
         'task': 'store.tasks.check_all_low_stock',
-        'schedule': crontab(hour=9, minute=0),  # 9:00 AM diario
+        'schedule': crontab(hour=9, minute=0),  # 9:00 AM daily
     },
 }
 
-# Para desarrollo (emails en consola)
+# Beat scheduler
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
+
+# For development (emails to console)
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# Para producción (descomentar y configurar):
+# For production (uncomment and configure):
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'
 # EMAIL_PORT = 587
 # EMAIL_USE_TLS = True
-# EMAIL_HOST_USER = 'tu-email@gmail.com'
-# EMAIL_HOST_PASSWORD = 'tu-app-password'
+# EMAIL_HOST_USER = 'your-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'your-app-password'
 
-DEFAULT_FROM_EMAIL = 'ecommerce@tudominio.com'
+DEFAULT_FROM_EMAIL = 'ecommerce@yourdomain.com'
+
+
+# Celery settings are already defined above. Remove duplicate configuration.

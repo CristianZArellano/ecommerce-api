@@ -1,6 +1,6 @@
 import os
 from celery import Celery
-from django.conf import settings
+
 
 # Configurar Django settings
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'ecommerce_api.settings')
