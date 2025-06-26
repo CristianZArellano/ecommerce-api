@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
+from celery.schedules import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -40,6 +41,8 @@ INSTALLED_APPS = [
     'django_filters',
     'rest_framework',
     'store', # Asumiendo que esta es tu aplicación donde están los modelos y vistas
+    'django_celery_results',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
@@ -203,7 +206,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'django.log'),
+            'filename': 'celery.log',
             'formatter': 'verbose',
         },
     },
@@ -212,24 +215,23 @@ LOGGING = {
         'level': 'INFO',
     },
     'loggers': {
-        'django': {
-            'handlers': ['console', 'file'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'store': {
+        'store.tasks': {
             'handlers': ['console', 'file'],
             'level': 'DEBUG',
             'propagate': False,
         },
-        'django.db.backends': {
+        'celery': {
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'store': {  # Tu logger existente
             'handlers': ['console'],
             'level': 'DEBUG',
             'propagate': False,
         },
     },
 }
-
 # ================================
 # SECURITY SETTINGS
 # ================================
@@ -253,3 +255,56 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    
+    
+CELERY_BROKER_URL = 'redis://localhost:6379/2'
+
+# Backend: PostgreSQL (tu BD existente)
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/3'
+CELERY_CACHE_BACKEND = 'django-cache'
+
+# Configuraciones de serialización
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Configuración de tareas
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutos
+CELERY_TASK_SOFT_TIME_LIMIT = 25 * 60  # 25 minutos
+CELERY_WORKER_PREFETCH_MULTIPLIER = 1
+CELERY_TASK_ACKS_LATE = True
+
+# Configuración de conexión RabbitMQ
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
+CELERY_BROKER_CONNECTION_RETRY = True
+CELERY_BROKER_CONNECTION_MAX_RETRIES = 10
+
+CELERY_BEAT_SCHEDULE = {
+    'generate-daily-reports': {
+        'task': 'store.tasks.generate_daily_sales_report',
+        'schedule': crontab(hour=23, minute=30),  # 11:30 PM diario
+    },
+    'cleanup-expired-orders': {
+        'task': 'store.tasks.cleanup_expired_orders',
+        'schedule': crontab(hour=2, minute=0),  # 2:00 AM diario
+    },
+    'check-low-stock': {
+        'task': 'store.tasks.check_all_low_stock',
+        'schedule': crontab(hour=9, minute=0),  # 9:00 AM diario
+    },
+}
+
+# Para desarrollo (emails en consola)
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Para producción (descomentar y configurar):
+# EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST = 'smtp.gmail.com'
+# EMAIL_PORT = 587
+# EMAIL_USE_TLS = True
+# EMAIL_HOST_USER = 'tu-email@gmail.com'
+# EMAIL_HOST_PASSWORD = 'tu-app-password'
+
+DEFAULT_FROM_EMAIL = 'ecommerce@tudominio.com'
