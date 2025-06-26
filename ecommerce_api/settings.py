@@ -322,3 +322,32 @@ DEFAULT_FROM_EMAIL = 'ecommerce@yourdomain.com'
 
 
 # Celery settings are already defined above. Remove duplicate configuration.
+# ================================
+# CELERY BEAT SCHEDULE (Tareas Programadas)
+# ================================
+
+
+CELERY_BEAT_SCHEDULE = {
+    'generate-daily-reports': {
+        'task': 'store.tasks.generate_daily_sales_report',
+        'schedule': crontab(hour=23, minute=30),  # 11:30 PM diario
+    },
+    'cleanup-expired-orders': {
+        'task': 'store.tasks.cleanup_expired_orders',
+        'schedule': crontab(hour=2, minute=0),  # 2:00 AM diario
+    },
+    'check-low-stock': {
+        'task': 'store.tasks.check_all_low_stock',
+        'schedule': crontab(hour=9, minute=0),  # 9:00 AM diario
+    },
+    'weekly-sales-summary': {
+        'task': 'store.tasks.weekly_sales_summary',
+        'schedule': crontab(hour=8, minute=0, day_of_week=1),  # Lunes 8 AM
+    },
+    'update-product-popularity': {
+        'task': 'store.tasks.update_product_popularity',
+        'schedule': crontab(hour=3, minute=0),  # 3:00 AM diario
+    },
+}
+
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
